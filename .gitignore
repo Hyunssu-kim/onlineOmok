@@ -1,0 +1,41 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+
+# API Keys
+.env
+*.key
+
+# Data
+data/raw/
+data/processed/
+*.csv
+*.json
+*.pkl
+
+# Models
+models/*.bin
+models/*.pt
+models/*.pth
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
