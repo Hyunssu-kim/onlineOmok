@@ -333,13 +333,17 @@ class OmokGame {
         this.updateGameDisplay(gameData);
         this.updateBoard(gameData.board);
         
-        // 게임 진행 중일 때 강제 재시작 버튼 표시 및 상태 감시 시작
-        if (gameData.state === 'playing') {
+        // 게임 진행 중일 때 강제 재시작 버튼 표시 및 상태 감시 시작 (admin만)
+        if (gameData.state === 'playing' && this.currentUserId === 'admin') {
             this.forceRestartBtn.style.display = 'inline-block';
             this.startGameStateMonitoring();
         } else {
             this.forceRestartBtn.style.display = 'none';
-            this.stopGameStateMonitoring();
+            if (gameData.state === 'playing') {
+                this.startGameStateMonitoring();
+            } else {
+                this.stopGameStateMonitoring();
+            }
         }
     }
 
@@ -1419,10 +1423,17 @@ class OmokGame {
             const now = Date.now();
             const timeSinceLastUpdate = now - this.lastGameUpdate;
             
-            // 30초 이상 게임 상태가 업데이트되지 않으면 자동 재시작
+            // 30초 이상 게임 상태가 업데이트되지 않으면 자동 재시작 (admin이 있을 때만)
             if (timeSinceLastUpdate > this.gameInactivityThreshold) {
-                console.error('게임이 30초 이상 멈춰있습니다. 자동으로 정리합니다.');
-                this.forceRestartGame();
+                console.error('게임이 30초 이상 멈춰있습니다.');
+                
+                // admin이 접속해 있을 때만 자동 재시작
+                if (this.currentUserId === 'admin') {
+                    console.log('admin 권한으로 자동 재시작 실행');
+                    this.forceRestartGame();
+                } else {
+                    console.log('admin이 접속하지 않아 자동 재시작을 하지 않습니다.');
+                }
             }
         }, 10000); // 10초마다 체크
     }
@@ -1435,9 +1446,15 @@ class OmokGame {
         }
     }
 
-    // 강제 게임 재시작
+    // 강제 게임 재시작 (admin만 가능)
     async forceRestartGame() {
         console.log('강제 게임 재시작 실행');
+        
+        // admin 권한 체크
+        if (this.currentUserId !== 'admin') {
+            alert('관리자만 게임을 강제로 재시작할 수 있습니다.');
+            return;
+        }
         
         if (confirm('현재 게임을 강제로 종료하고 새 게임을 시작하시겠습니까?')) {
             try {
