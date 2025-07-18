@@ -628,7 +628,12 @@ class OmokGame {
         }
 
         if (this.gameData.currentPlayer === 1 && this.isForbiddenMove(this.board, row, col, 1)) {
-            console.log('렌주룰 위반 감지:', { row, col, currentPlayer: this.gameData.currentPlayer });
+            console.log('렌주룰 위반 감지:', { 
+                row, 
+                col, 
+                currentPlayer: this.gameData.currentPlayer,
+                board: this.board
+            });
             alert('금수 자리입니다! 다른 곳에 두세요. (3-3, 4-4, 장연 금지)');
             return;
         }
@@ -982,12 +987,20 @@ class OmokGame {
     // 3-3 금수 체크
     checkDoubleThree(board, row, col, player) {
         const directions = [[0,1], [1,0], [1,1], [1,-1]];
+        const directionNames = ['가로', '세로', '대각선\\', '대각선/'];
         let threeCount = 0;
+        let foundDirections = [];
 
-        for (const [dx, dy] of directions) {
+        for (let i = 0; i < directions.length; i++) {
+            const [dx, dy] = directions[i];
             if (this.isThree(board, row, col, dx, dy, player)) {
                 threeCount++;
+                foundDirections.push(directionNames[i]);
             }
+        }
+
+        if (threeCount >= 2) {
+            console.log(`3-3 금수 발견 (${row}, ${col}):`, foundDirections.join(', '));
         }
 
         return threeCount >= 2;
@@ -1007,62 +1020,104 @@ class OmokGame {
         return fourCount >= 2;
     }
 
-    // 한 방향에서 3인지 확인
+    // 한 방향에서 열린 3인지 확인 (정확한 렌주룰)
     isThree(board, row, col, dx, dy, player) {
-        let count = 1;
-        let spaces = 0;
-
-        // 양방향으로 연속 돌 세기
-        for (let i = 1; i < 4; i++) {
-            const r = row + dx * i;
-            const c = col + dy * i;
-            if (r >= 0 && r < 15 && c >= 0 && c < 15) {
-                if (board[r][c] === player) count++;
-                else if (board[r][c] === 0) { spaces++; break; }
-                else break;
-            } else break;
-        }
-
-        for (let i = 1; i < 4; i++) {
+        // 임시로 돌을 놓고 체크
+        const tempBoard = board.map(row => [...row]);
+        tempBoard[row][col] = player;
+        
+        // 이 방향으로 연속된 돌의 개수와 패턴 확인
+        let leftCount = 0;
+        let rightCount = 0;
+        
+        // 왼쪽 방향으로 연속된 돌 세기
+        for (let i = 1; i < 5; i++) {
             const r = row - dx * i;
             const c = col - dy * i;
-            if (r >= 0 && r < 15 && c >= 0 && c < 15) {
-                if (board[r][c] === player) count++;
-                else if (board[r][c] === 0) { spaces++; break; }
-                else break;
-            } else break;
+            if (r >= 0 && r < 15 && c >= 0 && c < 15 && tempBoard[r][c] === player) {
+                leftCount++;
+            } else {
+                break;
+            }
         }
-
-        return count === 3 && spaces >= 2;
+        
+        // 오른쪽 방향으로 연속된 돌 세기
+        for (let i = 1; i < 5; i++) {
+            const r = row + dx * i;
+            const c = col + dy * i;
+            if (r >= 0 && r < 15 && c >= 0 && c < 15 && tempBoard[r][c] === player) {
+                rightCount++;
+            } else {
+                break;
+            }
+        }
+        
+        const totalCount = leftCount + rightCount + 1; // 현재 돌 포함
+        
+        // 정확히 3개이고, 양쪽이 모두 비어있어야 열린 3
+        if (totalCount === 3) {
+            const leftR = row - dx * (leftCount + 1);
+            const leftC = col - dy * (leftCount + 1);
+            const rightR = row + dx * (rightCount + 1);
+            const rightC = col + dy * (rightCount + 1);
+            
+            const leftEmpty = (leftR >= 0 && leftR < 15 && leftC >= 0 && leftC < 15 && tempBoard[leftR][leftC] === 0);
+            const rightEmpty = (rightR >= 0 && rightR < 15 && rightC >= 0 && rightC < 15 && tempBoard[rightR][rightC] === 0);
+            
+            return leftEmpty && rightEmpty;
+        }
+        
+        return false;
     }
 
-    // 한 방향에서 4인지 확인
+    // 한 방향에서 열린 4인지 확인 (정확한 렌주룰)
     isFour(board, row, col, dx, dy, player) {
-        let count = 1;
-        let spaces = 0;
-
-        // 양방향으로 연속 돌 세기
-        for (let i = 1; i < 5; i++) {
-            const r = row + dx * i;
-            const c = col + dy * i;
-            if (r >= 0 && r < 15 && c >= 0 && c < 15) {
-                if (board[r][c] === player) count++;
-                else if (board[r][c] === 0) { spaces++; break; }
-                else break;
-            } else break;
-        }
-
+        // 임시로 돌을 놓고 체크
+        const tempBoard = board.map(row => [...row]);
+        tempBoard[row][col] = player;
+        
+        // 이 방향으로 연속된 돌의 개수와 패턴 확인
+        let leftCount = 0;
+        let rightCount = 0;
+        
+        // 왼쪽 방향으로 연속된 돌 세기
         for (let i = 1; i < 5; i++) {
             const r = row - dx * i;
             const c = col - dy * i;
-            if (r >= 0 && r < 15 && c >= 0 && c < 15) {
-                if (board[r][c] === player) count++;
-                else if (board[r][c] === 0) { spaces++; break; }
-                else break;
-            } else break;
+            if (r >= 0 && r < 15 && c >= 0 && c < 15 && tempBoard[r][c] === player) {
+                leftCount++;
+            } else {
+                break;
+            }
         }
-
-        return count === 4 && spaces >= 2;
+        
+        // 오른쪽 방향으로 연속된 돌 세기
+        for (let i = 1; i < 5; i++) {
+            const r = row + dx * i;
+            const c = col + dy * i;
+            if (r >= 0 && r < 15 && c >= 0 && c < 15 && tempBoard[r][c] === player) {
+                rightCount++;
+            } else {
+                break;
+            }
+        }
+        
+        const totalCount = leftCount + rightCount + 1; // 현재 돌 포함
+        
+        // 정확히 4개이고, 한쪽이라도 비어있어야 열린 4 (승리 위협)
+        if (totalCount === 4) {
+            const leftR = row - dx * (leftCount + 1);
+            const leftC = col - dy * (leftCount + 1);
+            const rightR = row + dx * (rightCount + 1);
+            const rightC = col + dy * (rightCount + 1);
+            
+            const leftEmpty = (leftR >= 0 && leftR < 15 && leftC >= 0 && leftC < 15 && tempBoard[leftR][leftC] === 0);
+            const rightEmpty = (rightR >= 0 && rightR < 15 && rightC >= 0 && rightC < 15 && tempBoard[rightR][rightC] === 0);
+            
+            return leftEmpty || rightEmpty; // 한쪽만 비어있어도 열린 4
+        }
+        
+        return false;
     }
 
     // 채팅 메시지 전송
