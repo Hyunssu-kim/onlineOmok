@@ -56,6 +56,10 @@ class OmokGame {
 
         // 강제 재시작 버튼
         this.forceRestartBtn = document.getElementById('forceRestartBtn');
+        
+        // 게임 참여/나가기 버튼
+        this.joinGameBtn = document.getElementById('joinGameBtn');
+        this.leaveQueueBtn = document.getElementById('leaveQueueBtn');
     }
 
     attachEventListeners() {
@@ -87,6 +91,10 @@ class OmokGame {
 
         // 강제 재시작 버튼
         this.forceRestartBtn.addEventListener('click', () => this.forceRestartGame());
+        
+        // 게임 참여/나가기 버튼
+        this.joinGameBtn.addEventListener('click', () => this.joinGame());
+        this.leaveQueueBtn.addEventListener('click', () => this.leaveGame());
 
         // 사이드 패널 탭
         document.querySelectorAll('.tab-link').forEach(tab => {
@@ -286,27 +294,62 @@ class OmokGame {
         // 랭킹 로드
         this.loadRankings();
 
-        // 대기열에 추가
-        await this.addToQueue();
+        // 대기열에 추가 (관전자 모드로)
+        await this.addToQueue('spectating');
         
-        // 게임 시작 가능한지 확인
-        setTimeout(() => {
-            this.startNewGameIfReady();
-        }, 1000);
+        // 게임 참여/나가기 버튼 표시
+        this.updateGameButtons();
     }
 
-    async addToQueue(timestamp = Date.now()) {
+    async addToQueue(status = 'waiting', timestamp = Date.now()) {
         const queueRef = window.dbRef(window.database, `gameQueue/${this.currentUserId}`);
         await window.dbSet(queueRef, {
             userId: this.currentUserId,
-            joinedAt: timestamp,
-            status: 'waiting'
+            joinedAt: typeof status === 'number' ? status : timestamp,
+            status: typeof status === 'string' ? status : 'waiting'
         });
     }
 
     async removeFromQueue() {
         const queueRef = window.dbRef(window.database, `gameQueue/${this.currentUserId}`);
         await window.dbRemove(queueRef);
+    }
+    
+    async joinGame() {
+        // 게임 참여 상태로 변경
+        await this.addToQueue('waiting');
+        this.updateGameButtons();
+        
+        // 게임 시작 가능한지 확인
+        setTimeout(() => {
+            this.startNewGameIfReady();
+        }, 500);
+    }
+    
+    async leaveGame() {
+        // 관전자 모드로 변경
+        await this.addToQueue('spectating');
+        this.updateGameButtons();
+    }
+    
+    updateGameButtons() {
+        // 현재 대기열 상태 확인
+        const queueRef = window.dbRef(window.database, `gameQueue/${this.currentUserId}`);
+        window.dbOnValue(queueRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                if (userData.status === 'waiting') {
+                    this.joinGameBtn.style.display = 'none';
+                    this.leaveQueueBtn.style.display = 'inline-block';
+                } else {
+                    this.joinGameBtn.style.display = 'inline-block';
+                    this.leaveQueueBtn.style.display = 'none';
+                }
+            } else {
+                this.joinGameBtn.style.display = 'inline-block';
+                this.leaveQueueBtn.style.display = 'none';
+            }
+        }, { onlyOnce: true });
     }
 
     updateGameState(gameData) {
@@ -517,7 +560,7 @@ class OmokGame {
                 .filter(player => player.status === 'waiting')
                 .sort((a, b) => a.joinedAt - b.joinedAt);
 
-            console.log('대기 중인 플레이어:', waitingPlayers);
+            console.log('게임 참여 대기 중인 플레이어들:', waitingPlayers);
 
             if (waitingPlayers.length >= 2) {
                 const blackPlayer = waitingPlayers[0];
@@ -558,31 +601,63 @@ class OmokGame {
         this.queueList.innerHTML = '';
         
         if (!queueData) {
-            this.queueList.innerHTML = '<div class="queue-item">대기 중인 플레이어가 없습니다.</div>';
+            this.queueList.innerHTML = '<div class="queue-item">접속 중인 플레이어가 없습니다.</div>';
             return;
         }
 
-        const waitingPlayers = Object.entries(queueData)
-            .map(([userId, data]) => ({ userId, ...data }))
+        // 게임 참여 대기자와 관전자 분리
+        const allPlayers = Object.entries(queueData)
+            .map(([userId, data]) => ({ userId, ...data }));
+            
+        const waitingPlayers = allPlayers
             .filter(player => player.status === 'waiting')
             .sort((a, b) => a.joinedAt - b.joinedAt);
+            
+        const spectators = allPlayers
+            .filter(player => player.status === 'spectating')
+            .sort((a, b) => a.joinedAt - b.joinedAt);
 
+        // 게임 참여 대기자 표시
         if (waitingPlayers.length === 0) {
-            this.queueList.innerHTML = '<div class="queue-item">대기 중인 플레이어가 없습니다.</div>';
-            return;
+            this.queueList.innerHTML = '<div class="queue-item">게임 참여 대기자가 없습니다.</div>';
+        } else {
+            const waitingHeader = document.createElement('div');
+            waitingHeader.className = 'queue-header';
+            waitingHeader.textContent = `게임 참여 대기자 (${waitingPlayers.length}명)`;
+            this.queueList.appendChild(waitingHeader);
+            
+            waitingPlayers.forEach((player, index) => {
+                const queueItem = document.createElement('div');
+                queueItem.className = `queue-item waiting ${player.userId === this.currentUserId ? 'current-user' : ''}`;
+                
+                queueItem.innerHTML = `
+                    <span>${player.userId}</span>
+                    <span class="position">${index + 1}번째</span>
+                `;
+                
+                this.queueList.appendChild(queueItem);
+            });
         }
-
-        waitingPlayers.forEach((player, index) => {
-            const queueItem = document.createElement('div');
-            queueItem.className = `queue-item ${player.userId === this.currentUserId ? 'current-user' : ''}`;
+        
+        // 관전자 표시 
+        if (spectators.length > 0) {
+            const spectatorHeader = document.createElement('div');
+            spectatorHeader.className = 'queue-header';
+            spectatorHeader.textContent = `관전자 (${spectators.length}명)`;
+            this.queueList.appendChild(spectatorHeader);
             
-            queueItem.innerHTML = `
-                <span>${player.userId}</span>
-                <span class="position">${index + 1}번째</span>
-            `;
-            
-            this.queueList.appendChild(queueItem);
-        });
+            spectators.forEach((player) => {
+                const queueItem = document.createElement('div');
+                queueItem.className = `queue-item spectating ${player.userId === this.currentUserId ? 'current-user' : ''}`;
+                
+                queueItem.innerHTML = `
+                    <span>${player.userId}</span>
+                    <span class="position">관전중</span>
+                `;
+                
+                this.queueList.appendChild(queueItem);
+            });
+        }
 
         // 관전자 업데이트
         this.updateSpectators();
@@ -1218,16 +1293,19 @@ class OmokGame {
                 this.gameResultModal.style.display = 'none';
                 await this.cleanupGame();
 
-                // 승자와 패자 모두 대기열에 추가
+                // 승자와 패자 모두 관전자 모드로 대기열에 추가
                 if (this.currentUserId === winnerPlayer) {
-                    // 승자는 우선권으로 앞쪽에 배치
-                    await this.addToQueue(Date.now() - 1000);
-                    // 패자도 대기열 맨 뒤에 추가
+                    // 승자는 관전자 모드로
+                    await this.addToQueue('spectating');
+                    // 패자도 관전자 모드로
                     await this.moveLoserToQueueEnd(loserPlayer);
                 } else {
-                    // 패자는 일반 순서로 대기열에 추가
-                    await this.addToQueue(Date.now());
+                    // 패자는 관전자 모드로
+                    await this.addToQueue('spectating');
                 }
+                
+                // 버튼 상태 업데이트
+                this.updateGameButtons();
 
                 this.isHandlingEnd = false;
                 this.startNewGameIfReady();
@@ -1277,12 +1355,12 @@ class OmokGame {
     }
 
     async moveLoserToQueueEnd(loser) {
-        // 패배자를 대기열에 다시 추가 (맨 뒤로)
+        // 패배자를 관전자 모드로 대기열에 추가
         const queueRef = window.dbRef(window.database, `gameQueue/${loser}`);
         await window.dbSet(queueRef, {
             userId: loser,
             joinedAt: Date.now(), // 현재 시간으로 설정하여 맨 뒤로
-            status: 'waiting'
+            status: 'spectating' // 게임 종료 후에는 관전자 모드로
         });
     }
 

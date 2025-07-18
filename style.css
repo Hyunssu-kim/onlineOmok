@@ -403,6 +403,16 @@ body {
     gap: 8px;
 }
 
+.queue-header {
+    font-weight: bold;
+    font-size: 12px;
+    color: #1a1a1a;
+    padding: 8px 12px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
 .queue-item {
     display: flex;
     align-items: center;
@@ -422,6 +432,15 @@ body {
 .queue-item.current-user {
     background: #1a1a1a;
     color: white;
+}
+
+.queue-item.waiting {
+    border-left-color: #4CAF50; /* 녹색 - 게임 참여 대기 */
+}
+
+.queue-item.spectating {
+    border-left-color: #2196F3; /* 파란색 - 관전자 */
+    opacity: 0.8;
 }
 
 .queue-item .position {
