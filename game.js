@@ -161,40 +161,93 @@ class OmokGame {
             return;
         }
 
+        // 로딩 상태 표시
+        this.showLoginError('로그인 중...');
+        
         try {
             this.currentUserId = userId;
-            this.hideLoginError();
+            console.log('로그인 시도:', userId);
+            
+            // Firebase 연결 상태 확인
+            if (!window.database) {
+                throw new Error('Firebase 데이터베이스 연결 실패');
+            }
             
             // 기존 데이터 강제 삭제 후 새로 등록
             const onlineUserRef = window.dbRef(window.database, `onlineUsers/${userId}`);
             const queueUserRef = window.dbRef(window.database, `gameQueue/${userId}`);
             
-            // 기존 데이터 삭제
-            await window.dbRemove(onlineUserRef);
-            await window.dbRemove(queueUserRef);
+            console.log('기존 데이터 삭제 중...');
+            // 기존 데이터 삭제 (에러가 발생해도 계속 진행)
+            try {
+                await window.dbRemove(onlineUserRef);
+                await window.dbRemove(queueUserRef);
+            } catch (removeError) {
+                console.warn('기존 데이터 삭제 중 오류 (무시):', removeError);
+            }
             
-            // 새로 등록
-            await window.dbSet(onlineUserRef, {
-                userId: userId,
-                loginTime: Date.now(),
-                status: 'online'
-            });
+            console.log('온라인 사용자 등록 중...');
+            // 새로 등록 (재시도 로직 추가)
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    await window.dbSet(onlineUserRef, {
+                        userId: userId,
+                        loginTime: Date.now(),
+                        status: 'online'
+                    });
+                    console.log('온라인 사용자 등록 성공');
+                    break;
+                } catch (setError) {
+                    retryCount++;
+                    console.error(`온라인 사용자 등록 실패 (시도 ${retryCount}/${maxRetries}):`, setError);
+                    if (retryCount >= maxRetries) {
+                        throw setError;
+                    }
+                    // 1초 대기 후 재시도
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
 
+            console.log('자동 연결 해제 설정 중...');
             // 연결이 끊어지면 자동으로 온라인 사용자에서 제거
-            await window.dbOnDisconnect(onlineUserRef).remove();
+            try {
+                await window.dbOnDisconnect(onlineUserRef).remove();
+                await window.dbOnDisconnect(queueUserRef).remove();
+                console.log('자동 연결 해제 설정 완료');
+            } catch (disconnectError) {
+                console.error('자동 연결 해제 설정 실패:', disconnectError);
+                // 이 오류는 무시하고 계속 진행
+            }
             
-            // 연결이 끊어지면 대기열에서도 제거
-            await window.dbOnDisconnect(queueUserRef).remove();
+            this.hideLoginError();
+            console.log('게임 화면으로 전환 중...');
             
             // 게임 화면으로 전환
             this.showGameScreen();
             
             // Firebase 설정 및 게임 참가
+            console.log('게임 시스템 참가 중...');
             await this.joinGameSystem();
+            console.log('로그인 완료:', userId);
             
         } catch (error) {
-            console.error('로그인 실패:', error);
-            this.showLoginError('로그인에 실패했습니다.');
+            console.error('로그인 실패 상세:', error);
+            this.currentUserId = null;
+            
+            // 구체적인 에러 메시지 제공
+            let errorMessage = '로그인에 실패했습니다.';
+            if (error.message.includes('Firebase')) {
+                errorMessage = 'Firebase 연결에 실패했습니다. 잠시 후 다시 시도해주세요.';
+            } else if (error.message.includes('network')) {
+                errorMessage = '네트워크 연결을 확인해주세요.';
+            } else if (error.message.includes('permission')) {
+                errorMessage = '접근 권한이 없습니다. 관리자에게 문의하세요.';
+            }
+            
+            this.showLoginError(errorMessage);
         }
     }
 
@@ -1374,11 +1427,28 @@ class OmokGame {
 
 // 게임 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    // Firebase가 로드될 때까지 대기
+    console.log('DOM 로드 완료, Firebase 초기화 대기 중...');
+    
+    // Firebase가 로드될 때까지 대기 (타임아웃 추가)
+    let checkCount = 0;
+    const maxChecks = 100; // 10초 대기 (100ms * 100 = 10초)
+    
     const checkFirebase = () => {
-        if (window.database) {
+        checkCount++;
+        
+        if (window.database && window.dbRef && window.dbSet) {
+            console.log('Firebase 초기화 완료, 게임 시작');
             new OmokGame();
+        } else if (checkCount >= maxChecks) {
+            console.error('Firebase 초기화 타임아웃');
+            // 오류 메시지 표시
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.textContent = 'Firebase 초기화에 실패했습니다. 페이지를 새로고침해주세요.';
+                loginError.style.display = 'block';
+            }
         } else {
+            console.log(`Firebase 초기화 대기 중... (${checkCount}/${maxChecks})`);
             setTimeout(checkFirebase, 100);
         }
     };
