@@ -393,6 +393,15 @@ class OmokGame {
         this.updateGameDisplay(gameData);
         this.updateBoard(gameData.board);
         
+        // 게임 상태가 변경되었음을 기록 (타이머 관련 디버깅용)
+        console.log('게임 상태 업데이트:', {
+            state: gameData.state,
+            currentPlayer: gameData.currentPlayer,
+            myPosition: this.myPosition,
+            isMyTurn: this.isMyTurn,
+            timerStarted: this.turnTimer !== null
+        });
+        
         // 게임 진행 중일 때 강제 재시작 버튼 표시 및 상태 감시 시작 (admin만)
         if (gameData.state === 'playing' && this.currentUserId === 'admin') {
             this.forceRestartBtn.style.display = 'inline-block';
@@ -449,6 +458,13 @@ class OmokGame {
     }
 
     startTimer() {
+        console.log('타이머 시작 시도:', {
+            isMyTurn: this.isMyTurn,
+            myPosition: this.myPosition,
+            gameState: this.gameData?.state,
+            currentPlayer: this.gameData?.currentPlayer
+        });
+        
         this.stopTimer(); // 기존 타이머 정리
         this.timeLeft = 15;
         this.updateTimerDisplay();
@@ -461,6 +477,8 @@ class OmokGame {
                 this.handleTimeOut();
             }
         }, 1000);
+        
+        console.log('타이머 시작됨:', this.timeLeft + '초');
     }
 
     stopTimer() {
