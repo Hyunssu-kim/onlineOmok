@@ -310,10 +310,10 @@ class OmokGame {
             this.myPosition = 'spectator';
         }
 
-        // 게임 정보 업데이트
+        // 게임 정보 업데이트 (턴 정보를 먼저 업데이트)
+        this.updateTurnInfo(gameData);
         this.updateGameDisplay(gameData);
         this.updateBoard(gameData.board);
-        this.updateTurnInfo(gameData);
     }
 
     updateGameDisplay(gameData) {
