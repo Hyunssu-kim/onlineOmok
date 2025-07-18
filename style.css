@@ -617,6 +617,18 @@ body {
         font-size: 12px;
     }
     
+    /* 모바일에서 버튼 크기 축소 */
+    .user-info .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        min-width: 60px;
+    }
+    
+    .user-info span {
+        font-size: 11px;
+        margin: 0 5px;
+    }
+    
     .main-content {
         height: calc(100vh - 140px); /* 헤더 높이만큼 조정 */
     }
@@ -681,16 +693,46 @@ body {
         overflow-y: auto; /* 스크롤 추가 */
     }
     
+    /* 480px 이하에서도 버튼 크기 축소 */
+    .user-info .btn {
+        padding: 5px 8px;
+        font-size: 10px;
+        min-width: 50px;
+    }
+    
+    .user-info span {
+        font-size: 10px;
+        margin: 0 3px;
+    }
+    
     /* 모바일에서 채팅 섹션 최적화 */
     .chat-section {
         flex: 1;
         min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
     
     .chat-messages {
+        flex: 1;
         min-height: 60px;
         max-height: 80px;
         font-size: 11px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
+    }
+    
+    .chat-input-container {
+        flex-shrink: 0; /* 입력창 고정 */
+        padding-top: 8px;
     }
     
     .chat-input-container input {
