@@ -1201,11 +1201,15 @@ class OmokGame {
                 this.gameResultModal.style.display = 'none';
                 await this.cleanupGame();
 
-                // 승자는 우선권으로 앞쪽에, 패자는 뒤쪽에 배치
+                // 승자와 패자 모두 대기열에 추가
                 if (this.currentUserId === winnerPlayer) {
-                    await this.addToQueue(Date.now() - 1000); // 승자 우선권
+                    // 승자는 우선권으로 앞쪽에 배치
+                    await this.addToQueue(Date.now() - 1000);
+                    // 패자도 대기열 맨 뒤에 추가
+                    await this.moveLoserToQueueEnd(loserPlayer);
                 } else {
-                    await this.addToQueue(Date.now()); // 패자는 일반 순서
+                    // 패자는 일반 순서로 대기열에 추가
+                    await this.addToQueue(Date.now());
                 }
 
                 this.isHandlingEnd = false;

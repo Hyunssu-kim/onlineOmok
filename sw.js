@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omok-game-v37';
+const CACHE_NAME = 'omok-game-v38';
 const urlsToCache = [
   '/',
   '/index.html',
