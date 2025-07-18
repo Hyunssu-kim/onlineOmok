@@ -165,7 +165,6 @@ class OmokGame {
         }
 
         try {
-            this.currentUserId = userId;
             console.log('로그인 시도:', userId);
             
             // Firebase 연결 상태 확인
@@ -173,8 +172,26 @@ class OmokGame {
                 throw new Error('Firebase 데이터베이스 연결 실패');
             }
             
-            // 온라인 사용자 등록 (기존 데이터 덮어쓰기)
+            // 중복 접속 체크
             const onlineUserRef = window.dbRef(window.database, `onlineUsers/${userId}`);
+            const currentOnlineSnapshot = await new Promise((resolve) => {
+                window.dbOnValue(onlineUserRef, resolve, { onlyOnce: true });
+            });
+            
+            if (currentOnlineSnapshot.exists()) {
+                const existingUser = currentOnlineSnapshot.val();
+                const timeDiff = Date.now() - existingUser.loginTime;
+                
+                // 5초 이내에 로그인한 기록이 있으면 중복 접속으로 간주
+                if (timeDiff < 5000) {
+                    this.showLoginError('이미 다른 창에서 접속 중입니다. 잠시 후 다시 시도해주세요.');
+                    return;
+                }
+            }
+            
+            this.currentUserId = userId;
+            
+            // 온라인 사용자 등록
             const queueUserRef = window.dbRef(window.database, `gameQueue/${userId}`);
             
             await window.dbSet(onlineUserRef, {
