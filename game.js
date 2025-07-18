@@ -20,6 +20,9 @@ class OmokGame {
         this.turnTimer = null;
         this.timeLeft = 15;
         this.isHandlingEnd = false;
+        this.gameStateTimer = null; // 게임 상태 감시 타이머
+        this.lastGameUpdate = Date.now();
+        this.gameInactivityThreshold = 60000; // 60초 비활성 임계값
         
         this.initializeElements();
         this.attachEventListeners();
@@ -53,6 +56,9 @@ class OmokGame {
 
         // 무르기 관련 요소
         this.undoBtn = document.getElementById('undoBtn');
+        
+        // 강제 재시작 버튼
+        this.forceRestartBtn = document.getElementById('forceRestartBtn');
     }
 
     attachEventListeners() {
@@ -84,6 +90,9 @@ class OmokGame {
 
         // 무르기 버튼
         this.undoBtn.addEventListener('click', () => this.requestUndo());
+        
+        // 강제 재시작 버튼
+        this.forceRestartBtn.addEventListener('click', () => this.forceRestartGame());
 
         // 사이드 패널 탭
         document.querySelectorAll('.tab-link').forEach(tab => {
@@ -334,9 +343,12 @@ class OmokGame {
         if (this.isHandlingEnd) return;
 
         this.gameData = gameData;
+        this.lastGameUpdate = Date.now(); // 게임 업데이트 시간 기록
 
         if (!gameData) {
             this.gameState.textContent = '게임 대기중';
+            this.forceRestartBtn.style.display = 'none';
+            this.stopGameStateMonitoring();
             this.startNewGameIfReady();
             return;
         }
@@ -367,6 +379,15 @@ class OmokGame {
         this.updateTurnInfo(gameData);
         this.updateGameDisplay(gameData);
         this.updateBoard(gameData.board);
+        
+        // 게임 진행 중일 때 강제 재시작 버튼 표시 및 상태 감시 시작
+        if (gameData.state === 'playing') {
+            this.forceRestartBtn.style.display = 'inline-block';
+            this.startGameStateMonitoring();
+        } else {
+            this.forceRestartBtn.style.display = 'none';
+            this.stopGameStateMonitoring();
+        }
     }
 
     updateGameDisplay(gameData) {
@@ -1421,6 +1442,84 @@ class OmokGame {
             
             // 일반적인 제거도 시도
             this.removeFromQueue();
+        }
+    }
+
+    // 게임 상태 감시 시작
+    startGameStateMonitoring() {
+        this.stopGameStateMonitoring(); // 기존 감시 중지
+        
+        this.gameStateTimer = setInterval(() => {
+            const now = Date.now();
+            const timeSinceLastUpdate = now - this.lastGameUpdate;
+            
+            // 60초 이상 게임 상태가 업데이트되지 않으면 경고
+            if (timeSinceLastUpdate > this.gameInactivityThreshold) {
+                console.warn('게임이 60초 이상 비활성 상태입니다.');
+                
+                // 120초 이상이면 자동으로 게임 정리
+                if (timeSinceLastUpdate > this.gameInactivityThreshold * 2) {
+                    console.error('게임이 120초 이상 멈춰있습니다. 자동으로 정리합니다.');
+                    this.forceRestartGame();
+                }
+            }
+        }, 10000); // 10초마다 체크
+    }
+
+    // 게임 상태 감시 중지
+    stopGameStateMonitoring() {
+        if (this.gameStateTimer) {
+            clearInterval(this.gameStateTimer);
+            this.gameStateTimer = null;
+        }
+    }
+
+    // 강제 게임 재시작
+    async forceRestartGame() {
+        console.log('강제 게임 재시작 실행');
+        
+        if (confirm('현재 게임을 강제로 종료하고 새 게임을 시작하시겠습니까?')) {
+            try {
+                // 현재 게임 삭제
+                await window.dbRemove(this.gameRef);
+                console.log('현재 게임 삭제 완료');
+                
+                // 게임 상태 초기화
+                this.isHandlingEnd = false;
+                this.gameData = null;
+                this.myPosition = null;
+                this.isMyTurn = false;
+                
+                // 타이머 정지
+                this.stopTimer();
+                this.stopGameStateMonitoring();
+                
+                // 강제 재시작 버튼 숨기기
+                this.forceRestartBtn.style.display = 'none';
+                
+                // 시스템 메시지 전송
+                const chatData = {
+                    user: 'system',
+                    message: `${this.currentUserId}님이 게임을 재시작했습니다.`,
+                    timestamp: Date.now(),
+                    type: 'system'
+                };
+                await window.dbPush(this.chatRef, chatData);
+                
+                // 모든 플레이어를 대기열로 복귀
+                await this.addToQueue();
+                
+                // 잠시 후 새 게임 시작 시도
+                setTimeout(() => {
+                    this.startNewGameIfReady();
+                }, 1000);
+                
+                console.log('강제 게임 재시작 완료');
+                
+            } catch (error) {
+                console.error('강제 게임 재시작 실패:', error);
+                alert('게임 재시작에 실패했습니다.');
+            }
         }
     }
 }
