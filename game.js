@@ -22,7 +22,7 @@ class OmokGame {
         this.isHandlingEnd = false;
         this.gameStateTimer = null; // 게임 상태 감시 타이머
         this.lastGameUpdate = Date.now();
-        this.gameInactivityThreshold = 60000; // 60초 비활성 임계값
+        this.gameInactivityThreshold = 30000; // 30초 비활성 임계값
         
         this.initializeElements();
         this.attachEventListeners();
@@ -54,9 +54,6 @@ class OmokGame {
         this.chatInput = document.getElementById('chatInput');
         this.sendChatBtn = document.getElementById('sendChatBtn');
 
-        // 무르기 관련 요소
-        this.undoBtn = document.getElementById('undoBtn');
-        
         // 강제 재시작 버튼
         this.forceRestartBtn = document.getElementById('forceRestartBtn');
     }
@@ -88,9 +85,6 @@ class OmokGame {
             }
         });
 
-        // 무르기 버튼
-        this.undoBtn.addEventListener('click', () => this.requestUndo());
-        
         // 강제 재시작 버튼
         this.forceRestartBtn.addEventListener('click', () => this.forceRestartGame());
 
@@ -170,9 +164,6 @@ class OmokGame {
             return;
         }
 
-        // 로딩 상태 표시
-        this.showLoginError('로그인 중...');
-        
         try {
             this.currentUserId = userId;
             console.log('로그인 시도:', userId);
@@ -182,65 +173,27 @@ class OmokGame {
                 throw new Error('Firebase 데이터베이스 연결 실패');
             }
             
-            // 기존 데이터 강제 삭제 후 새로 등록
+            // 온라인 사용자 등록 (기존 데이터 덮어쓰기)
             const onlineUserRef = window.dbRef(window.database, `onlineUsers/${userId}`);
             const queueUserRef = window.dbRef(window.database, `gameQueue/${userId}`);
             
-            console.log('기존 데이터 삭제 중...');
-            // 기존 데이터 삭제 (에러가 발생해도 계속 진행)
-            try {
-                await window.dbRemove(onlineUserRef);
-                await window.dbRemove(queueUserRef);
-            } catch (removeError) {
-                console.warn('기존 데이터 삭제 중 오류 (무시):', removeError);
-            }
-            
-            console.log('온라인 사용자 등록 중...');
-            // 새로 등록 (재시도 로직 추가)
-            let retryCount = 0;
-            const maxRetries = 3;
-            
-            while (retryCount < maxRetries) {
-                try {
-                    await window.dbSet(onlineUserRef, {
-                        userId: userId,
-                        loginTime: Date.now(),
-                        status: 'online'
-                    });
-                    console.log('온라인 사용자 등록 성공');
-                    break;
-                } catch (setError) {
-                    retryCount++;
-                    console.error(`온라인 사용자 등록 실패 (시도 ${retryCount}/${maxRetries}):`, setError);
-                    if (retryCount >= maxRetries) {
-                        throw setError;
-                    }
-                    // 1초 대기 후 재시도
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
+            await window.dbSet(onlineUserRef, {
+                userId: userId,
+                loginTime: Date.now(),
+                status: 'online'
+            });
 
-            console.log('자동 연결 해제 설정 중...');
             // 연결이 끊어지면 자동으로 온라인 사용자에서 제거
-            try {
-                await window.dbOnDisconnect(onlineUserRef).remove();
-                await window.dbOnDisconnect(queueUserRef).remove();
-                console.log('자동 연결 해제 설정 완료');
-            } catch (disconnectError) {
-                console.error('자동 연결 해제 설정 실패:', disconnectError);
-                // 이 오류는 무시하고 계속 진행
-            }
+            await window.dbOnDisconnect(onlineUserRef).remove();
+            await window.dbOnDisconnect(queueUserRef).remove();
             
             this.hideLoginError();
-            console.log('게임 화면으로 전환 중...');
             
             // 게임 화면으로 전환
             this.showGameScreen();
             
             // Firebase 설정 및 게임 참가
-            console.log('게임 시스템 참가 중...');
             await this.joinGameSystem();
-            console.log('로그인 완료:', userId);
             
         } catch (error) {
             console.error('로그인 실패 상세:', error);
@@ -396,13 +349,6 @@ class OmokGame {
         
         if (gameData.state === 'playing') {
             this.gameState.textContent = '게임 진행중';
-            
-            // 무르기 버튼 표시 (게임 중이고 내 차례일 때)
-            if (this.isMyTurn && (this.myPosition === 'black' || this.myPosition === 'white')) {
-                this.undoBtn.style.display = 'inline-block';
-            } else {
-                this.undoBtn.style.display = 'none';
-            }
 
             // 타이머는 내 차례일 때만 시작
             if (this.isMyTurn) {
@@ -412,11 +358,9 @@ class OmokGame {
             }
         } else if (gameData.state === 'finished') {
             this.gameState.textContent = '게임 종료';
-            this.undoBtn.style.display = 'none';
             this.stopTimer();
         } else {
             this.gameState.textContent = '게임 대기중';
-            this.undoBtn.style.display = 'none';
             this.stopTimer();
         }
     }
@@ -1181,39 +1125,6 @@ class OmokGame {
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
-    // 무르기 요청
-    async requestUndo() {
-        if (!this.gameData || this.gameData.state !== 'playing' || !this.isMyTurn) {
-            alert('무르기는 자신의 차례에만 요청할 수 있습니다.');
-            return;
-        }
-
-        if (!this.gameData.moves || this.gameData.moves.length === 0) {
-            alert('무를 수가 없습니다.');
-            return;
-        }
-
-        // 상대방에게 무르기 요청 전송
-        const undoRequest = {
-            requester: this.currentUserId,
-            timestamp: Date.now(),
-            gameId: 'current'
-        };
-
-        const undoRef = window.dbRef(window.database, 'undoRequest');
-        await window.dbSet(undoRef, undoRequest);
-
-        // 시스템 메시지 전송
-        const chatData = {
-            user: 'system',
-            message: `${this.currentUserId}님이 무르기를 요청했습니다.`,
-            timestamp: Date.now(),
-            type: 'system'
-        };
-        await window.dbPush(this.chatRef, chatData);
-
-        alert('무르기를 요청했습니다. 상대방의 응답을 기다리세요.');
-    }
 
     async handleGameEnd(gameData) {
         this.stopTimer();
@@ -1453,15 +1364,10 @@ class OmokGame {
             const now = Date.now();
             const timeSinceLastUpdate = now - this.lastGameUpdate;
             
-            // 60초 이상 게임 상태가 업데이트되지 않으면 경고
+            // 30초 이상 게임 상태가 업데이트되지 않으면 자동 재시작
             if (timeSinceLastUpdate > this.gameInactivityThreshold) {
-                console.warn('게임이 60초 이상 비활성 상태입니다.');
-                
-                // 120초 이상이면 자동으로 게임 정리
-                if (timeSinceLastUpdate > this.gameInactivityThreshold * 2) {
-                    console.error('게임이 120초 이상 멈춰있습니다. 자동으로 정리합니다.');
-                    this.forceRestartGame();
-                }
+                console.error('게임이 30초 이상 멈춰있습니다. 자동으로 정리합니다.');
+                this.forceRestartGame();
             }
         }, 10000); // 10초마다 체크
     }
