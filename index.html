@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오목 게임</title>
-    <link rel="stylesheet" href="style.css?v=41">
+    <link rel="stylesheet" href="style.css?v=42">
 </head>
 <body>
     <div class="container">
@@ -21,6 +21,14 @@
                 </div>
                 <div class="info-text">
                     등록된 사용자만 입장 가능합니다
+                </div>
+                
+                <!-- 랭킹 섹션 -->
+                <div class="ranking-section">
+                    <h3>랭킹</h3>
+                    <div class="ranking-list" id="loginRankingList">
+                        <!-- 랭킹 정보 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,36 +73,11 @@
 
                 <!-- 사이드 패널 -->
                 <div class="side-panel">
-                    <div class="side-panel-nav">
-                        <button class="tab-link active" data-tab="ranking">랭킹</button>
-                    </div>
-
-                    <!-- 랭킹 -->
-                    <div class="tab-content active" id="tab-ranking">
-                        <div class="ranking-list" id="rankingList">
-                            <!-- 랭킹 정보 -->
-                        </div>
-                    </div>
-
-                    <!-- 대기열 (항상 표시) -->
+                    <!-- 대기열 -->
                     <div class="queue-section">
                         <h3>대기열</h3>
                         <div class="queue-list" id="queueList">
                             <!-- 대기 중인 플레이어들 -->
-                        </div>
-                    </div>
-
-                    <!-- 채팅 (항상 표시) -->
-                    <div class="chat-section">
-                        <h3>채팅</h3>
-                        <div class="chat-container">
-                            <div class="chat-messages" id="chatMessages">
-                                <!-- 채팅 메시지들 -->
-                            </div>
-                            <div class="chat-input-container">
-                                <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." maxlength="100">
-                                <button id="sendChatBtn">전송</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -169,6 +152,6 @@
         }
     </script>
     
-    <script src="game.js?v=41"></script>
+    <script src="game.js?v=42"></script>
 </body>
 </html>

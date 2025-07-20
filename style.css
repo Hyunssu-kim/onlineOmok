@@ -25,16 +25,19 @@ body {
     justify-content: center;
     height: 100vh;
     background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+    padding: 20px;
 }
 
 .login-container {
     background: white;
-    padding: 60px;
+    padding: 40px;
     border-radius: 10px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     text-align: center;
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .login-container h1 {
@@ -108,6 +111,27 @@ body {
 .info-text {
     color: #666;
     font-size: 14px;
+    margin-bottom: 30px;
+}
+
+/* 로그인 화면 랭킹 섹션 */
+.ranking-section {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.ranking-section h3 {
+    font-size: 18px;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.ranking-section .ranking-list {
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 /* 게임 화면 */
@@ -369,31 +393,19 @@ body {
     display: block;
 }
 
-/* 대기열과 채팅 섹션 */
-.queue-section, .chat-section {
+/* 대기열 섹션 */
+.queue-section {
     padding: 15px;
-    border-bottom: 1px solid #e0e0e0;
+    flex: 1;
 }
 
-.queue-section h3, .chat-section h3 {
+.queue-section h3 {
     margin-bottom: 10px;
     font-size: 14px;
     font-weight: 600;
     color: #1a1a1a;
     padding-bottom: 5px;
     border-bottom: 1px solid #f0f0f0;
-}
-
-.chat-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.chat-section .chat-container {
-    flex: 1;
-    min-height: 0;
 }
 
 /* 대기열 */
@@ -724,122 +736,8 @@ body {
         margin: 0 3px;
     }
     
-    /* 모바일에서 채팅 섹션 최적화 */
-    .chat-section {
-        flex: 1;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-    
-    .chat-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-    
-    .chat-messages {
-        flex: 1;
-        min-height: 60px;
-        max-height: 80px;
-        font-size: 11px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch; /* iOS 스크롤 개선 */
-    }
-    
-    .chat-input-container {
-        flex-shrink: 0; /* 입력창 고정 */
-        padding-top: 8px;
-    }
-    
-    .chat-input-container input {
-        font-size: 11px;
-        padding: 6px;
-    }
-    
-    .chat-input-container button {
-        font-size: 10px;
-        padding: 6px 8px;
-    }
 }
 
-/* 채팅 스타일 */
-.chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 150px;
-}
-
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 5px 0;
-    min-height: 80px;
-    max-height: 120px;
-}
-
-.chat-message {
-    margin-bottom: 8px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    background: #f8f8f8;
-    font-size: 12px;
-}
-
-.chat-message.my-message {
-    background: #e3f2fd;
-    margin-left: 20px;
-}
-
-.chat-message.system-message {
-    background: #fff3e0;
-    font-style: italic;
-    text-align: center;
-}
-
-.chat-message .username {
-    font-weight: bold;
-    color: #1a1a1a;
-    margin-right: 5px;
-}
-
-.chat-message .timestamp {
-    font-size: 10px;
-    color: #999;
-    float: right;
-}
-
-.chat-input-container {
-    display: flex;
-    gap: 5px;
-    padding-top: 10px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.chat-input-container input {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 12px;
-}
-
-.chat-input-container button {
-    padding: 8px 12px;
-    background: #1a1a1a;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.chat-input-container button:hover {
-    background: #333;
-}
 
 /* 무르기 요청 모달 */
 .undo-request-modal {
@@ -874,24 +772,20 @@ body {
 }
 
 /* 스크롤바 스타일 */
-.ranking-list::-webkit-scrollbar,
-.chat-messages::-webkit-scrollbar {
+.ranking-list::-webkit-scrollbar {
     width: 6px;
 }
 
-.ranking-list::-webkit-scrollbar-track,
-.chat-messages::-webkit-scrollbar-track {
+.ranking-list::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
 }
 
-.ranking-list::-webkit-scrollbar-thumb,
-.chat-messages::-webkit-scrollbar-thumb {
+.ranking-list::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
 }
 
-.ranking-list::-webkit-scrollbar-thumb:hover,
-.chat-messages::-webkit-scrollbar-thumb:hover {
+.ranking-list::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }

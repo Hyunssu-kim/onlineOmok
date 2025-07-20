@@ -27,6 +27,9 @@ class OmokGame {
         this.initializeElements();
         this.attachEventListeners();
         this.createBoard();
+        
+        // 로그인 화면에 랭킹 로드
+        this.loadLoginRankings();
     }
 
     initializeElements() {
@@ -49,10 +52,8 @@ class OmokGame {
         this.gameResultMessage = document.getElementById('gameResultMessage');
         this.timerElement = document.getElementById('timer');
 
-        // 채팅 관련 요소
-        this.chatMessages = document.getElementById('chatMessages');
-        this.chatInput = document.getElementById('chatInput');
-        this.sendChatBtn = document.getElementById('sendChatBtn');
+        // 로그인 화면 랭킹
+        this.loginRankingList = document.getElementById('loginRankingList');
 
         // 강제 재시작 버튼
         this.forceRestartBtn = document.getElementById('forceRestartBtn');
@@ -79,39 +80,12 @@ class OmokGame {
         // 게임 결과 모달
         document.getElementById('continueBtn').addEventListener('click', () => this.continueGame());
 
-        // 채팅 전송 버튼
-        this.sendChatBtn.addEventListener('click', () => this.sendChatMessage());
-
-        // 채팅 입력 엔터키
-        this.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.sendChatMessage();
-            }
-        });
-
         // 강제 재시작 버튼
         this.forceRestartBtn.addEventListener('click', () => this.forceRestartGame());
         
         // 게임 참여/나가기 버튼
         this.joinGameBtn.addEventListener('click', () => this.joinGame());
         this.leaveQueueBtn.addEventListener('click', () => this.leaveGame());
-
-        // 사이드 패널 탭
-        document.querySelectorAll('.tab-link').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                // 탭 활성화
-                document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                // 컨텐츠 활성화
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(`tab-${tabName}`).classList.add('active');
-            });
-        });
 
         // 페이지 종료 시 정리
         window.addEventListener('beforeunload', (event) => {
@@ -265,7 +239,6 @@ class OmokGame {
         this.gameRef = window.dbRef(window.database, 'currentGame');
         this.queueRef = window.dbRef(window.database, 'gameQueue');
         this.statsRef = window.dbRef(window.database, 'userStats');
-        this.chatRef = window.dbRef(window.database, 'chats');
         
         // 게임 상태 감시
         window.dbOnValue(this.gameRef, (snapshot) => {
@@ -284,15 +257,6 @@ class OmokGame {
             const statsData = snapshot.val();
             this.updateRanking(statsData);
         });
-
-        // 채팅 감시
-        window.dbOnValue(this.chatRef, (snapshot) => {
-            const chatData = snapshot.val();
-            this.updateChat(chatData);
-        });
-
-        // 랭킹 로드
-        this.loadRankings();
 
         // 대기열에 추가 (관전자 모드로)
         await this.addToQueue('spectating');
@@ -531,18 +495,8 @@ class OmokGame {
 
         await window.dbSet(this.gameRef, gameUpdate);
 
-        // 시스템 메시지 전송
-        try {
-            const chatData = {
-                user: 'system',
-                message: `${currentPlayerName}님이 시간 초과로 패배했습니다.`,
-                timestamp: Date.now(),
-                type: 'system'
-            };
-            await window.dbPush(this.chatRef, chatData);
-        } catch (error) {
-            console.error('시간 초과 메시지 전송 실패:', error);
-        }
+        // 시간 초과 메시지는 콘솔에만 출력
+        console.log(`시간 초과: ${currentPlayerName}님이 패배했습니다.`);
     }
 
     async startNewGameIfReady() {
@@ -1234,64 +1188,54 @@ class OmokGame {
         return false;
     }
 
-    // 채팅 메시지 전송
-    async sendChatMessage() {
-        const message = this.chatInput.value.trim();
-        if (!message || !this.currentUserId) return;
-
-        const chatData = {
-            user: this.currentUserId,
-            message: message,
-            timestamp: Date.now(),
-            type: 'message'
-        };
-
-        try {
-            await window.dbPush(this.chatRef, chatData);
-            this.chatInput.value = '';
-        } catch (error) {
-            console.error('채팅 전송 실패:', error);
-        }
+    // 로그인 화면에 랭킹 로드
+    async loadLoginRankings() {
+        const statsRef = window.dbRef(window.database, 'userStats');
+        
+        window.dbOnValue(statsRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const stats = snapshot.val();
+                this.updateLoginRankingDisplay(stats);
+            } else {
+                this.loginRankingList.innerHTML = '<div class="ranking-item">아직 랭킹 정보가 없습니다.</div>';
+            }
+        });
     }
 
-    // 채팅 업데이트
-    updateChat(chatData) {
-        if (!chatData) {
-            this.chatMessages.innerHTML = '<div class="chat-message system-message">채팅을 시작하세요!</div>';
+    updateLoginRankingDisplay(stats) {
+        const statsArray = Object.values(stats)
+            .filter(stat => stat.games > 0)
+            .sort((a, b) => {
+                const aWinRate = a.wins / a.games;
+                const bWinRate = b.wins / b.games;
+                if (aWinRate !== bWinRate) return bWinRate - aWinRate;
+                return b.wins - a.wins;
+            })
+            .slice(0, 10);
+        
+        this.loginRankingList.innerHTML = '';
+        
+        if (statsArray.length === 0) {
+            this.loginRankingList.innerHTML = '<div class="ranking-item">아직 랭킹 정보가 없습니다.</div>';
             return;
         }
-
-        const messages = Object.values(chatData).sort((a, b) => a.timestamp - b.timestamp);
-        this.chatMessages.innerHTML = '';
-
-        // 최근 50개 메시지만 표시
-        const recentMessages = messages.slice(-50);
-
-        recentMessages.forEach(msg => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${msg.user === this.currentUserId ? 'my-message' : ''}`;
+        
+        statsArray.forEach((stat, index) => {
+            const rankItem = document.createElement('div');
+            rankItem.className = `ranking-item rank-${index + 1}`;
             
-            const time = new Date(msg.timestamp).toLocaleTimeString('ko-KR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-
-            if (msg.type === 'system') {
-                messageDiv.className += ' system-message';
-                messageDiv.innerHTML = `${msg.message} <span class="timestamp">${time}</span>`;
-            } else {
-                messageDiv.innerHTML = `
-                    <span class="username">${msg.user}:</span>
-                    ${msg.message}
-                    <span class="timestamp">${time}</span>
-                `;
-            }
-
-            this.chatMessages.appendChild(messageDiv);
+            const winRate = ((stat.wins / stat.games) * 100).toFixed(1);
+            
+            rankItem.innerHTML = `
+                <div class="rank-info">
+                    <span class="rank-number">${index + 1}</span>
+                    <span class="player-name">${stat.name}</span>
+                </div>
+                <span class="win-rate">${winRate}% (${stat.wins}승 ${stat.losses}패)</span>
+            `;
+            
+            this.loginRankingList.appendChild(rankItem);
         });
-
-        // 스크롤을 맨 아래로
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
 
@@ -1592,14 +1536,8 @@ class OmokGame {
                 // 강제 재시작 버튼 숨기기
                 this.forceRestartBtn.style.display = 'none';
                 
-                // 시스템 메시지 전송
-                const chatData = {
-                    user: 'system',
-                    message: `${this.currentUserId}님이 게임을 재시작했습니다.`,
-                    timestamp: Date.now(),
-                    type: 'system'
-                };
-                await window.dbPush(this.chatRef, chatData);
+                // 게임 재시작 로그
+                console.log(`${this.currentUserId}님이 게임을 재시작했습니다.`);
                 
                 // 모든 플레이어를 대기열로 복귀
                 await this.addToQueue();
