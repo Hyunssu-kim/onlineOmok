@@ -1,9 +1,10 @@
-const CACHE_NAME = 'omok-game-v42';
+const CACHE_NAME = 'omok-game-v45';
 const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
-  '/game.js'
+  '/game.js',
+  '/firebase-config.js'
 ];
 
 self.addEventListener('install', function(event) {

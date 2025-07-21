@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오목 게임</title>
-    <link rel="stylesheet" href="style.css?v=42">
+    <link rel="stylesheet" href="style.css?v=45">
 </head>
 <body>
     <div class="container">
@@ -66,6 +66,9 @@
             <div class="main-content">
                 <!-- 게임 보드 -->
                 <div class="board-container">
+                    <!-- 이모지 표시 영역 -->
+                    <div class="emoji-display" id="emojiDisplay"></div>
+                    
                     <div class="game-board" id="gameBoard">
                         <!-- 19x19 오목판이 동적으로 생성됩니다 -->
                     </div>
@@ -73,6 +76,17 @@
 
                 <!-- 사이드 패널 -->
                 <div class="side-panel">
+                    <!-- 이모지 표현 -->
+                    <div class="emoji-section">
+                        <h3>기분 표현</h3>
+                        <div class="emoji-buttons">
+                            <button class="emoji-btn" data-emoji="😊" title="기쁨">😊</button>
+                            <button class="emoji-btn" data-emoji="😢" title="슬픔">😢</button>
+                            <button class="emoji-btn" data-emoji="😤" title="화남">😤</button>
+                            <button class="emoji-btn" data-emoji="👍" title="좋아요">👍</button>
+                        </div>
+                    </div>
+                    
                     <!-- 대기열 -->
                     <div class="queue-section">
                         <h3>대기열</h3>
@@ -99,31 +113,42 @@
         // Firebase 9 모듈러 SDK
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
         import { getDatabase, ref, set, onValue, push, remove, off, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
-
-        // Firebase 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyCyG7NvG40GCQivMzxT0-p8dbiLKwfinUE",
-            authDomain: "my-app-tesths.firebaseapp.com",
-            databaseURL: "https://my-app-tesths-default-rtdb.firebaseio.com",
-            projectId: "my-app-tesths",
-            storageBucket: "my-app-tesths.firebasestorage.app",
-            messagingSenderId: "814938636984",
-            appId: "1:814938636984:web:863b1ba8a630dde03dea4d"
-        };
-
-        // Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // 전역 변수로 Firebase 객체들을 설정
-        window.database = database;
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbOnValue = onValue;
-        window.dbPush = push;
-        window.dbRemove = remove;
-        window.dbOff = off;
-        window.dbOnDisconnect = onDisconnect;
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        
+        // 보안 설정 로드
+        import { firebaseConfig, validateDomain } from './firebase-config.js';
+        
+        try {
+            // 도메인 검증
+            validateDomain();
+            
+            // Firebase 초기화
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            const auth = getAuth(app);
+            
+            // 익명 인증 시도
+            signInAnonymously(auth).then(() => {
+                console.log('익명 인증 성공');
+            }).catch((error) => {
+                console.error('익명 인증 실패:', error);
+            });
+            
+            // 전역 변수로 Firebase 객체들을 설정
+            window.database = database;
+            window.auth = auth;
+            window.dbRef = ref;
+            window.dbSet = set;
+            window.dbOnValue = onValue;
+            window.dbPush = push;
+            window.dbRemove = remove;
+            window.dbOff = off;
+            window.dbOnDisconnect = onDisconnect;
+            
+        } catch (error) {
+            console.error('Firebase 초기화 실패:', error);
+            alert('비인가된 접근입니다.');
+        }
     </script>
     
     <!-- Service Worker 등록 -->
@@ -152,6 +177,6 @@
         }
     </script>
     
-    <script src="game.js?v=42"></script>
+    <script src="game.js?v=45"></script>
 </body>
 </html>

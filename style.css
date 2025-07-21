@@ -1,4 +1,4 @@
-/* 전체 스타일 - 흑백톤 깔끔한 디자인 */
+/* 전체 스타일 - 모던하고 세련된 디자인 */
 * {
     margin: 0;
     padding: 0;
@@ -6,11 +6,12 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f8f8f8;
-    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #2c3e50;
     height: 100vh;
     overflow: hidden;
+    line-height: 1.6;
 }
 
 .container {
@@ -24,27 +25,60 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px;
+    position: relative;
+}
+
+.login-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="2" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="1.5" fill="%23ffffff" opacity="0.1"/></svg>');
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
 }
 
 .login-container {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 50px 40px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
     text-align: center;
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
+    position: relative;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.login-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 .login-container h1 {
-    font-size: 2.5em;
-    margin-bottom: 40px;
-    color: #1a1a1a;
-    font-weight: 300;
+    font-size: 2.8em;
+    margin-bottom: 45px;
+    color: #2c3e50;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .login-form {
@@ -57,39 +91,68 @@ body {
 
 .input-group input {
     width: 100%;
-    padding: 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 5px;
+    padding: 18px 20px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 12px;
     font-size: 16px;
-    transition: border-color 0.3s;
-    background: #fafafa;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    font-weight: 500;
 }
 
 .input-group input:focus {
     outline: none;
-    border-color: #333;
-    background: white;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
 }
 
 .btn {
-    padding: 15px 30px;
+    padding: 16px 32px;
     border: none;
-    border-radius: 5px;
+    border-radius: 12px;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     min-width: 120px;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
 }
 
 .btn.primary {
-    background: #1a1a1a;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn.primary:hover {
-    background: #333;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn.primary:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn.secondary {
@@ -103,35 +166,72 @@ body {
 }
 
 .error-message {
-    color: #d32f2f;
+    color: #e74c3c;
     font-size: 14px;
-    margin-top: 10px;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    animation: errorSlideIn 0.3s ease-out;
+    font-weight: 500;
+}
+
+@keyframes errorSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .info-text {
-    color: #666;
+    color: #5a6c7d;
     font-size: 14px;
     margin-bottom: 30px;
+    padding: 12px 16px;
+    background: rgba(102, 126, 234, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    font-weight: 500;
+    line-height: 1.5;
 }
 
 /* 로그인 화면 랭킹 섹션 */
 .ranking-section {
-    margin-top: 30px;
+    margin-top: 35px;
     text-align: left;
+    padding: 20px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .ranking-section h3 {
-    font-size: 18px;
-    color: #1a1a1a;
-    margin-bottom: 15px;
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 20px;
     text-align: center;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+    padding-bottom: 12px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
 }
 
 .ranking-section .ranking-list {
-    max-height: 300px;
+    max-height: 320px;
     overflow-y: auto;
+    padding-right: 8px;
 }
 
 /* 게임 화면 */
@@ -139,7 +239,19 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: white;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    position: relative;
+}
+
+.game-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="%23667eea" opacity="0.1"/><circle cx="80" cy="80" r="0.5" fill="%23764ba2" opacity="0.1"/></svg>');
+    pointer-events: none;
 }
 
 /* 상단 헤더 */
@@ -147,10 +259,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 30px;
-    background: #1a1a1a;
+    padding: 25px 35px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    height: 80px;
+    height: 90px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 10;
 }
 
 .player-info {
@@ -162,16 +279,32 @@ body {
 .player {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-weight: 500;
+    gap: 12px;
+    font-weight: 600;
     font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.player:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .player-stone {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.player:hover .player-stone {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
 .player-stone.black {
@@ -194,9 +327,11 @@ body {
 }
 
 .current-turn {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 5px;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
 }
 
 .game-state {
@@ -205,15 +340,29 @@ body {
 }
 
 .timer {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 800;
     color: #fff;
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    margin-top: 12px;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.timer.warning {
+    animation: pulse 1s infinite;
+    background: rgba(220, 53, 69, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
 .user-info {
@@ -239,21 +388,128 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    background: #f5f5f5;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    position: relative;
+}
+
+.board-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* 이모지 표시 영역 */
+.emoji-display {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    height: 60px;
+    z-index: 100;
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.emoji-message {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: emojiSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    max-width: 200px;
+}
+
+.emoji-message.left {
+    margin-right: auto;
+}
+
+.emoji-message.right {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.emoji-message .emoji {
+    font-size: 24px;
+    animation: emojiPulse 0.6s ease-in-out;
+}
+
+.emoji-message .player-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2c3e50;
+    white-space: nowrap;
+}
+
+.emoji-message.left .player-name {
+    color: #000;
+}
+
+.emoji-message.right .player-name {
+    color: #666;
+}
+
+@keyframes emojiSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes emojiPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@keyframes emojiSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+    }
 }
 
 /* 오목판 - 완전히 새로운 방식 */
 .game-board {
     position: relative;
-    background: #DEB887;
+    background: linear-gradient(135deg, #d4a574 0%, #c8956d 100%);
     width: min(70vh, 600px);
     height: min(70vh, 600px);
-    margin: 20px;
+    margin: 25px;
     display: grid;
     grid-template-columns: repeat(15, 1fr);
     grid-template-rows: repeat(15, 1fr);
     gap: 0;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(102, 126, 234, 0.2);
+    transition: all 0.3s ease;
+}
+
+.game-board:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 /* 격자선을 배경으로 표시 */
@@ -265,10 +521,11 @@ body {
     right: 0;
     bottom: 0;
     background-image: 
-        repeating-linear-gradient(to right, transparent 0, transparent calc(100% / 15 - 1px), #333 calc(100% / 15 - 1px), #333 calc(100% / 15)),
-        repeating-linear-gradient(to bottom, transparent 0, transparent calc(100% / 15 - 1px), #333 calc(100% / 15 - 1px), #333 calc(100% / 15));
+        repeating-linear-gradient(to right, transparent 0, transparent calc(100% / 15 - 1px), rgba(0, 0, 0, 0.8) calc(100% / 15 - 1px), rgba(0, 0, 0, 0.8) calc(100% / 15)),
+        repeating-linear-gradient(to bottom, transparent 0, transparent calc(100% / 15 - 1px), rgba(0, 0, 0, 0.8) calc(100% / 15 - 1px), rgba(0, 0, 0, 0.8) calc(100% / 15));
     pointer-events: none;
     z-index: 1;
+    border-radius: 9px;
 }
 
 .cell {
@@ -280,22 +537,33 @@ body {
     z-index: 2;
     min-height: 0;
     min-width: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 2px;
 }
 
 .cell:hover::before {
     content: '';
     position: absolute;
-    width: 8px;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.3);
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.6), rgba(102, 126, 234, 0.3));
     border-radius: 50%;
     z-index: 1;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
+    animation: hoverPulse 1s ease-in-out infinite;
+}
+
+@keyframes hoverPulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.2); opacity: 0.8; }
 }
 
 /* 바둑판 화점 제거됨 */
 
 .cell:hover {
-    background: rgba(245, 222, 179, 0.3);
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+    border-radius: 4px;
 }
 
 .cell.stone {
@@ -311,47 +579,89 @@ body {
 }
 
 .cell.forbidden {
-    background: rgba(255, 0, 0, 0.2) !important;
+    background: rgba(231, 76, 60, 0.2) !important;
     cursor: not-allowed !important;
+    border-radius: 4px;
+    animation: forbiddenPulse 0.6s ease-in-out;
+}
+
+@keyframes forbiddenPulse {
+    0%, 100% { 
+        background: rgba(231, 76, 60, 0.2) !important;
+        transform: scale(1);
+    }
+    50% { 
+        background: rgba(231, 76, 60, 0.4) !important;
+        transform: scale(1.05);
+    }
 }
 
 .cell.forbidden:hover {
-    background: rgba(255, 0, 0, 0.3) !important;
+    background: rgba(231, 76, 60, 0.35) !important;
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
 }
 
 .stone {
-    width: 80%;
-    height: 80%;
+    width: 85%;
+    height: 85%;
     border-radius: 50%;
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    animation: placeStone 0.3s ease-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.2);
+    animation: placeStone 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     z-index: 10;
     aspect-ratio: 1;
+    position: relative;
+}
+
+.stone::before {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: 15%;
+    width: 30%;
+    height: 30%;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    filter: blur(2px);
 }
 
 @keyframes placeStone {
-    0% { transform: scale(0); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    0% { 
+        transform: scale(0) rotate(180deg); 
+        opacity: 0;
+    }
+    60% { 
+        transform: scale(1.3) rotate(0deg);
+        opacity: 0.8;
+    }
+    100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
 }
 
 .stone.black {
-    background: radial-gradient(circle at 30% 30%, #444, #000);
+    background: radial-gradient(circle at 30% 30%, #4a4a4a, #000);
+    border: 1px solid rgba(0, 0, 0, 0.8);
 }
 
 .stone.white {
-    background: radial-gradient(circle at 30% 30%, #fff, #ddd);
-    border: 1px solid #ccc;
+    background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* 사이드 패널 */
 .side-panel {
-    width: 300px;
-    background: white;
-    border-left: 1px solid #e0e0e0;
+    width: 320px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(102, 126, 234, 0.2);
     display: flex;
     flex-direction: column;
     height: 100%;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 5;
 }
 
 .side-panel-nav {
@@ -393,19 +703,107 @@ body {
     display: block;
 }
 
+/* 이모지 섹션 */
+.emoji-section {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(102, 126, 234, 0.05) 100%);
+    border-radius: 12px;
+    margin: 10px 10px 5px 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+}
+
+.emoji-section h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
+}
+
+.emoji-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.emoji-btn {
+    padding: 12px;
+    font-size: 24px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.emoji-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.emoji-btn:hover::before {
+    left: 100%;
+}
+
+.emoji-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    border-color: rgba(102, 126, 234, 0.4);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.emoji-btn:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.emoji-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* 대기열 섹션 */
 .queue-section {
-    padding: 15px;
+    padding: 20px;
     flex: 1;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(102, 126, 234, 0.05) 100%);
+    border-radius: 12px;
+    margin: 5px 10px 10px 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .queue-section h3 {
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+    text-align: center;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* 대기열 */
@@ -429,21 +827,49 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    border-left: 3px solid #333;
-    transition: all 0.3s;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.queue-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.queue-item:hover::before {
+    left: 100%;
 }
 
 .queue-item:hover {
-    background: #f0f0f0;
-    transform: translateX(3px);
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(8px) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    border-left-color: #764ba2;
 }
 
 .queue-item.current-user {
-    background: #1a1a1a;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    border-left-color: #ffffff;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.queue-item.current-user:hover {
+    transform: translateX(8px) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
 .queue-item.waiting {
@@ -493,29 +919,70 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    transition: all 0.3s;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ranking-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.ranking-item:hover::before {
+    left: 100%;
 }
 
 .ranking-item:hover {
-    background: #f0f0f0;
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 .ranking-item.rank-1 {
-    background: #fff9c4;
-    border-left: 3px solid #ffd700;
+    background: linear-gradient(135deg, #fff9c4 0%, #ffecb3 100%);
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.ranking-item.rank-1:hover {
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    border-color: #ffb300;
 }
 
 .ranking-item.rank-2 {
-    background: #f5f5f5;
-    border-left: 3px solid #c0c0c0;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    border: 2px solid #c0c0c0;
+    box-shadow: 0 4px 15px rgba(192, 192, 192, 0.3);
+}
+
+.ranking-item.rank-2:hover {
+    box-shadow: 0 8px 25px rgba(192, 192, 192, 0.4);
+    border-color: #999999;
 }
 
 .ranking-item.rank-3 {
-    background: #faf0e6;
-    border-left: 3px solid #cd7f32;
+    background: linear-gradient(135deg, #faf0e6 0%, #f4e4bc 100%);
+    border: 2px solid #cd7f32;
+    box-shadow: 0 4px 15px rgba(205, 127, 50, 0.3);
+}
+
+.ranking-item.rank-3:hover {
+    box-shadow: 0 8px 25px rgba(205, 127, 50, 0.4);
+    border-color: #b8722d;
 }
 
 .rank-info {
@@ -561,9 +1028,21 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(20px);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(20px);
+    }
 }
 
 .modal-content {
@@ -571,36 +1050,59 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    padding: 50px 40px;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2);
     text-align: center;
-    min-width: 350px;
+    min-width: 400px;
+    max-width: 90vw;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    animation: modalSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translate(-50%, -60%) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
 }
 
 .modal-content h2 {
-    margin-bottom: 20px;
-    color: #1a1a1a;
-    font-weight: 600;
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 28px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
 }
 
 .modal-content p {
-    margin-bottom: 30px;
-    font-size: 16px;
-    color: #666;
+    margin-bottom: 35px;
+    font-size: 18px;
+    color: #5a6c7d;
+    line-height: 1.6;
+    font-weight: 500;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
     .main-content {
         flex-direction: column;
-        height: calc(100vh - 80px);
+        height: calc(100vh - 90px);
     }
     
     .board-container {
         flex: 1;
-        padding: 10px;
+        padding: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -608,23 +1110,45 @@ body {
     
     .side-panel {
         width: 100%;
-        height: 300px; /* 높이 더 증가 */
+        height: 320px;
         border-left: none;
-        border-top: 1px solid #e0e0e0;
+        border-top: 2px solid rgba(102, 126, 234, 0.2);
         flex-shrink: 0;
-        overflow-y: auto; /* 스크롤 추가 */
+        overflow-y: auto;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .emoji-section {
+        margin: 5px;
+        padding: 15px;
+    }
+    
+    .emoji-buttons {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    
+    .emoji-btn {
+        padding: 10px;
+        font-size: 20px;
+    }
+    
+    .queue-section {
+        margin: 5px;
+        padding: 20px 15px;
     }
 }
 
 @media (max-width: 768px) {
     .game-header {
-        padding: 8px 12px;
+        padding: 15px 15px;
         height: auto;
         display: grid;
         grid-template-columns: 1fr auto 1fr;
         grid-template-rows: auto auto;
-        gap: 8px;
+        gap: 12px;
         align-items: center;
+        min-height: 100px;
     }
 
     .player-info {
@@ -650,9 +1174,10 @@ body {
     
     /* 모바일에서 버튼 크기 축소 */
     .user-info .btn {
-        padding: 6px 10px;
-        font-size: 11px;
-        min-width: 60px;
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 70px;
+        border-radius: 8px;
     }
     
     .user-info span {
@@ -661,7 +1186,7 @@ body {
     }
     
     .main-content {
-        height: calc(100vh - 140px); /* 헤더 높이만큼 조정 */
+        height: calc(100vh - 150px);
     }
     
     .board-container {
@@ -677,18 +1202,57 @@ body {
     }
     
     .side-panel {
-        height: 220px; /* 높이 증가 */
-        overflow-y: auto; /* 스크롤 추가 */
+        height: 240px;
+        overflow-y: auto;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .modal-content {
+        min-width: 320px;
+        padding: 40px 30px;
+        margin: 0 15px;
+    }
+    
+    .emoji-display {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        height: 50px;
+    }
+    
+    .emoji-message {
+        padding: 6px 12px;
+        max-width: 150px;
+    }
+    
+    .emoji-message .emoji {
+        font-size: 20px;
+    }
+    
+    .emoji-message .player-name {
+        font-size: 11px;
     }
 }
 
 @media (max-width: 480px) {
     .login-container {
-        padding: 40px 30px;
+        padding: 40px 25px;
+        border-radius: 15px;
     }
     
     .login-container h1 {
-        font-size: 2em;
+        font-size: 2.2em;
+        margin-bottom: 35px;
+    }
+    
+    .input-group input {
+        padding: 16px 18px;
+        font-size: 16px;
+    }
+    
+    .btn {
+        padding: 14px 28px;
+        font-size: 15px;
     }
     
     .game-header {
@@ -720,15 +1284,73 @@ body {
     }
     
     .side-panel {
-        height: 200px; /* 높이 증가 */
-        overflow-y: auto; /* 스크롤 추가 */
+        height: 220px;
+        overflow-y: auto;
+        border-radius: 15px 15px 0 0;
     }
     
     /* 480px 이하에서도 버튼 크기 축소 */
     .user-info .btn {
-        padding: 5px 8px;
+        padding: 6px 10px;
+        font-size: 11px;
+        min-width: 55px;
+        border-radius: 6px;
+    }
+    
+    .modal-content {
+        min-width: 280px;
+        padding: 35px 25px;
+        margin: 0 10px;
+        border-radius: 15px;
+    }
+    
+    .emoji-section {
+        margin: 5px;
+        padding: 12px;
+    }
+    
+    .emoji-section h3 {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .emoji-buttons {
+        gap: 6px;
+    }
+    
+    .emoji-btn {
+        padding: 8px;
+        font-size: 18px;
+    }
+    
+    .emoji-display {
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        height: 45px;
+    }
+    
+    .emoji-message {
+        padding: 4px 10px;
+        max-width: 120px;
+    }
+    
+    .emoji-message .emoji {
+        font-size: 18px;
+    }
+    
+    .emoji-message .player-name {
         font-size: 10px;
-        min-width: 50px;
+    }
+    
+    .modal-content h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .modal-content p {
+        font-size: 16px;
+        margin-bottom: 25px;
     }
     
     .user-info span {
@@ -745,13 +1367,16 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    padding: 30px 25px;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(102, 126, 234, 0.2);
     z-index: 1001;
-    min-width: 300px;
+    min-width: 320px;
     text-align: center;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    animation: modalSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .undo-request-modal h3 {
@@ -772,20 +1397,86 @@ body {
 }
 
 /* 스크롤바 스타일 */
-.ranking-list::-webkit-scrollbar {
-    width: 6px;
+.ranking-list::-webkit-scrollbar,
+.side-panel::-webkit-scrollbar {
+    width: 8px;
 }
 
-.ranking-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
+.ranking-list::-webkit-scrollbar-track,
+.side-panel::-webkit-scrollbar-track {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 4px;
 }
 
-.ranking-list::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
+.ranking-list::-webkit-scrollbar-thumb,
+.side-panel::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.ranking-list::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+.ranking-list::-webkit-scrollbar-thumb:hover,
+.side-panel::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+}
+
+/* 로딩 상태 */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* 전역 전환 효과 */
+* {
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 마우스 효과 개선 */
+.btn, .queue-item, .ranking-item, .cell, .player {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* 터치 인터정션 개선 */
+@media (hover: none) and (pointer: coarse) {
+    .cell:hover::before {
+        display: none;
+    }
+    
+    .cell:active::before {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.6), rgba(102, 126, 234, 0.3));
+        border-radius: 50%;
+        z-index: 1;
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .btn:active {
+        transform: scale(0.98);
+    }
 }

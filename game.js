@@ -1,8 +1,29 @@
-// 미리 등록된 사용자 목록
-const REGISTERED_USERS = [
-    'admin', 'player1', 'player2', 'player3', 'player4', 'player5', '사라','현수', '현호', '완재',
-    'user1', 'user2', 'user3', 'user4', 'test1', 'test2', 'guest1', 'guest2'
-];
+// 보안 설정 가져오기 (전역 변수로 접근)
+let REGISTERED_USERS = [];
+let validateUser = null;
+
+// 보안 설정 로드 시도
+try {
+    // 모듈이 로드되면 전역에서 접근 가능
+    if (window.firebaseSecurityConfig) {
+        REGISTERED_USERS = window.firebaseSecurityConfig.REGISTERED_USERS;
+        validateUser = window.firebaseSecurityConfig.validateUser;
+    } else {
+        // 폴백: 기본 사용자 목록
+        REGISTERED_USERS = [
+            'admin', 'player1', 'player2', 'player3', 'player4', 'player5', '사라','현수', '현호', '완재',
+            'user1', 'user2', 'user3', 'user4', 'test1', 'test2', 'guest1', 'guest2'
+        ];
+        validateUser = (userId) => REGISTERED_USERS.includes(userId);
+    }
+} catch (error) {
+    console.warn('보안 설정 로드 실패, 기본 설정 사용:', error);
+    REGISTERED_USERS = [
+        'admin', 'player1', 'player2', 'player3', 'player4', 'player5', '사라','현수', '현호', '완재',
+        'user1', 'user2', 'user3', 'user4', 'test1', 'test2', 'guest1', 'guest2'
+    ];
+    validateUser = (userId) => REGISTERED_USERS.includes(userId);
+}
 
 // 게임 상태 관리
 class OmokGame {
@@ -61,6 +82,10 @@ class OmokGame {
         // 게임 참여/나가기 버튼
         this.joinGameBtn = document.getElementById('joinGameBtn');
         this.leaveQueueBtn = document.getElementById('leaveQueueBtn');
+        
+        // 이모지 관련 요소
+        this.emojiDisplay = document.getElementById('emojiDisplay');
+        this.emojiButtons = document.querySelectorAll('.emoji-btn');
     }
 
     attachEventListeners() {
@@ -86,6 +111,14 @@ class OmokGame {
         // 게임 참여/나가기 버튼
         this.joinGameBtn.addEventListener('click', () => this.joinGame());
         this.leaveQueueBtn.addEventListener('click', () => this.leaveGame());
+        
+        // 이모지 버튼 이벤트
+        this.emojiButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const emoji = btn.dataset.emoji;
+                this.sendEmoji(emoji);
+            });
+        });
 
         // 페이지 종료 시 정리
         window.addEventListener('beforeunload', (event) => {
@@ -141,7 +174,7 @@ class OmokGame {
             return;
         }
 
-        if (!REGISTERED_USERS.includes(userId)) {
+        if (!validateUser(userId)) {
             this.showLoginError('등록되지 않은 사용자입니다.');
             return;
         }
@@ -245,6 +278,9 @@ class OmokGame {
             const gameData = snapshot.val();
             this.updateGameState(gameData);
         });
+        
+        // 이모지 리스너 설정
+        this.setupEmojiListener();
 
         // 대기열 감시
         window.dbOnValue(this.queueRef, (snapshot) => {
