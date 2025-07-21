@@ -1,29 +1,28 @@
 // 보안 설정 가져오기 (전역 변수로 접근)
-let REGISTERED_USERS = [];
-let validateUser = null;
+let REGISTERED_USERS = [
+    'admin', 'player1', 'player2', 'player3', 'player4', 'player5', '사라','현수', '현호', '완재',
+    'user1', 'user2', 'user3', 'user4', 'test1', 'test2', 'guest1', 'guest2'
+];
+let validateUser = (userId) => REGISTERED_USERS.includes(userId);
 
-// 보안 설정 로드 시도
-try {
-    // 모듈이 로드되면 전역에서 접근 가능
-    if (window.firebaseSecurityConfig) {
-        REGISTERED_USERS = window.firebaseSecurityConfig.REGISTERED_USERS;
-        validateUser = window.firebaseSecurityConfig.validateUser;
-    } else {
-        // 폴백: 기본 사용자 목록
-        REGISTERED_USERS = [
-            'admin', 'player1', 'player2', 'player3', 'player4', 'player5', '사라','현수', '현호', '완재',
-            'user1', 'user2', 'user3', 'user4', 'test1', 'test2', 'guest1', 'guest2'
-        ];
-        validateUser = (userId) => REGISTERED_USERS.includes(userId);
+// 보안 설정 로드 시도 (비동기)
+function loadSecurityConfig() {
+    try {
+        // 모듈이 로드되면 전역에서 접근 가능
+        if (window.firebaseSecurityConfig && window.firebaseSecurityConfig.REGISTERED_USERS) {
+            REGISTERED_USERS = window.firebaseSecurityConfig.REGISTERED_USERS;
+            validateUser = window.firebaseSecurityConfig.validateUser;
+            console.log('보안 설정 로드 성공');
+        } else {
+            console.log('보안 설정 없음, 기본 설정 사용');
+        }
+    } catch (error) {
+        console.warn('보안 설정 로드 실패, 기본 설정 사용:', error);
     }
-} catch (error) {
-    console.warn('보안 설정 로드 실패, 기본 설정 사용:', error);
-    REGISTERED_USERS = [
-        'admin', 'player1', 'player2', 'player3', 'player4', 'player5', '사라','현수', '현호', '완재',
-        'user1', 'user2', 'user3', 'user4', 'test1', 'test2', 'guest1', 'guest2'
-    ];
-    validateUser = (userId) => REGISTERED_USERS.includes(userId);
 }
+
+// 페이지 로드 후 보안 설정 로드
+setTimeout(loadSecurityConfig, 100);
 
 // 게임 상태 관리
 class OmokGame {
@@ -174,7 +173,9 @@ class OmokGame {
             return;
         }
 
-        if (!validateUser(userId)) {
+        // 사용자 검증 (안전한 방식)
+        const isValidUser = validateUser ? validateUser(userId) : REGISTERED_USERS.includes(userId);
+        if (!isValidUser) {
             this.showLoginError('등록되지 않은 사용자입니다.');
             return;
         }
@@ -183,8 +184,14 @@ class OmokGame {
             console.log('로그인 시도:', userId);
             
             // Firebase 연결 상태 확인
-            if (!window.database) {
-                throw new Error('Firebase 데이터베이스 연결 실패');
+            if (!window.database || !window.dbRef || !window.dbSet) {
+                this.showLoginError('Firebase 연결을 확인하는 중... 잠시 후 다시 시도해주세요.');
+                console.error('Firebase 객체들이 로드되지 않음:', {
+                    database: !!window.database,
+                    dbRef: !!window.dbRef,
+                    dbSet: !!window.dbSet
+                });
+                return;
             }
             
             // 중복 접속 체크
@@ -1597,29 +1604,59 @@ class OmokGame {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM 로드 완료, Firebase 초기화 대기 중...');
     
-    // Firebase가 로드될 때까지 대기 (타임아웃 추가)
+    // Firebase가 로드될 때까지 대기 (타임아웃 증가)
     let checkCount = 0;
-    const maxChecks = 100; // 10초 대기 (100ms * 100 = 10초)
+    const maxChecks = 200; // 20초 대기 (100ms * 200 = 20초)
     
     const checkFirebase = () => {
         checkCount++;
         
-        if (window.database && window.dbRef && window.dbSet) {
+        // Firebase 객체들이 모두 로드되었는지 확인
+        const firebaseReady = window.database && window.dbRef && window.dbSet && window.dbOnValue;
+        
+        if (firebaseReady) {
             console.log('Firebase 초기화 완료, 게임 시작');
+            console.log('Firebase 객체 상태:', {
+                database: !!window.database,
+                dbRef: !!window.dbRef,
+                dbSet: !!window.dbSet,
+                dbOnValue: !!window.dbOnValue
+            });
             new OmokGame();
         } else if (checkCount >= maxChecks) {
-            console.error('Firebase 초기화 타임아웃');
-            // 오류 메시지 표시
-            const loginError = document.getElementById('loginError');
-            if (loginError) {
-                loginError.textContent = 'Firebase 초기화에 실패했습니다. 페이지를 새로고침해주세요.';
-                loginError.style.display = 'block';
+            console.error('Firebase 초기화 타임아웃', {
+                database: !!window.database,
+                dbRef: !!window.dbRef,
+                dbSet: !!window.dbSet,
+                dbOnValue: !!window.dbOnValue
+            });
+            
+            // 강제로 게임 시작 시도 (기본 기능만)
+            console.warn('강제 게임 시작 시도...');
+            try {
+                new OmokGame();
+            } catch (error) {
+                console.error('게임 시작 실패:', error);
+                // 오류 메시지 표시
+                const loginError = document.getElementById('loginError');
+                if (loginError) {
+                    loginError.textContent = 'Firebase 초기화에 실패했습니다. 페이지를 새로고침해주세요.';
+                    loginError.style.display = 'block';
+                }
             }
         } else {
-            console.log(`Firebase 초기화 대기 중... (${checkCount}/${maxChecks})`);
+            if (checkCount % 50 === 0) { // 5초마다 로그 출력
+                console.log(`Firebase 초기화 대기 중... (${checkCount}/${maxChecks})`, {
+                    database: !!window.database,
+                    dbRef: !!window.dbRef,
+                    dbSet: !!window.dbSet,
+                    dbOnValue: !!window.dbOnValue
+                });
+            }
             setTimeout(checkFirebase, 100);
         }
     };
     
-    checkFirebase();
+    // 지연 시작 (다른 스크립트들이 로드될 시간 제공)
+    setTimeout(checkFirebase, 500);
 });

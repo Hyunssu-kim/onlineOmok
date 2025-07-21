@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오목 게임</title>
-    <link rel="stylesheet" href="style.css?v=45">
+    <link rel="stylesheet" href="style.css?v=47">
 </head>
 <body>
     <div class="container">
@@ -108,6 +108,9 @@
         </div>
     </div>
 
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+    
     <!-- Firebase SDK -->
     <script type="module">
         // Firebase 9 모듈러 SDK
@@ -115,15 +118,27 @@
         import { getDatabase, ref, set, onValue, push, remove, off, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
         import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
         
-        // 보안 설정 로드
-        import { firebaseConfig, validateDomain } from './firebase-config.js';
-        
         try {
-            // 도메인 검증
-            validateDomain();
+            // 전역 설정에서 Firebase 설정 가져오기
+            const config = window.firebaseSecurityConfig;
+            if (!config) {
+                throw new Error('보안 설정을 로드할 수 없습니다.');
+            }
+            
+            // 도메인 검증 (선택사항)
+            const currentDomain = window.location.hostname;
+            const allowedDomains = ['my-app-tesths.web.app', 'my-app-tesths.firebaseapp.com', 'localhost', '127.0.0.1'];
+            const isAllowed = allowedDomains.some(domain => 
+                currentDomain === domain || currentDomain.endsWith('.' + domain)
+            );
+            
+            if (!isAllowed) {
+                console.warn('비인가된 도메인에서 접근:', currentDomain);
+                // 경고만 출력하고 계속 진행 (개발 환경 고려)
+            }
             
             // Firebase 초기화
-            const app = initializeApp(firebaseConfig);
+            const app = initializeApp(config.firebaseConfig);
             const database = getDatabase(app);
             const auth = getAuth(app);
             
@@ -132,6 +147,7 @@
                 console.log('익명 인증 성공');
             }).catch((error) => {
                 console.error('익명 인증 실패:', error);
+                // 인증 실패도 계속 진행 (로컬 개발 고려)
             });
             
             // 전역 변수로 Firebase 객체들을 설정
@@ -145,9 +161,40 @@
             window.dbOff = off;
             window.dbOnDisconnect = onDisconnect;
             
+            console.log('Firebase 초기화 성공');
+            
         } catch (error) {
             console.error('Firebase 초기화 실패:', error);
-            alert('비인가된 접근입니다.');
+            
+            // 폴백: 기본 Firebase 설정으로 직접 초기화
+            try {
+                const fallbackConfig = {
+                    apiKey: "AIzaSyCyG7NvG40GCQivMzxT0-p8dbiLKwfinUE",
+                    authDomain: "my-app-tesths.firebaseapp.com",
+                    databaseURL: "https://my-app-tesths-default-rtdb.firebaseio.com",
+                    projectId: "my-app-tesths",
+                    storageBucket: "my-app-tesths.firebasestorage.app",
+                    messagingSenderId: "814938636984",
+                    appId: "1:814938636984:web:863b1ba8a630dde03dea4d"
+                };
+                
+                const app = initializeApp(fallbackConfig);
+                const database = getDatabase(app);
+                
+                window.database = database;
+                window.dbRef = ref;
+                window.dbSet = set;
+                window.dbOnValue = onValue;
+                window.dbPush = push;
+                window.dbRemove = remove;
+                window.dbOff = off;
+                window.dbOnDisconnect = onDisconnect;
+                
+                console.log('Firebase 폴백 초기화 성공');
+                
+            } catch (fallbackError) {
+                console.error('Firebase 폴백 초기화도 실패:', fallbackError);
+            }
         }
     </script>
     
@@ -177,6 +224,6 @@
         }
     </script>
     
-    <script src="game.js?v=45"></script>
+    <script src="game.js?v=47"></script>
 </body>
 </html>
